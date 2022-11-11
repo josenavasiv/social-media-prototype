@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model User {
+	id    		Int     @id @default(autoincrement())
+	username	String 	@unique
+	email 		String  @unique
+	password	String
+
+	createdAt 	DateTime @default(now())
+	updatedAt 	DateTime @updatedAt
+
+	posts		Post[] // One User Many Posts
+	updoots		Updoot[]
+}
+
+model Post {
+	id       	Int     @id @default(autoincrement())
+	title    	String
+	text		String
+	points		Int 	@default(0)
+	voteStatus 	Int? // Nullable
+	createdAt 	DateTime @default(now())
+	updatedAt 	DateTime @updatedAt
+
+	creator 	User 	@relation(fields: [creatorId], references: [id]) // Many-to-One (Many Posts One User)
+	creatorId 	Int // One user for each post
+
+	updoots 	Updoot[] // One-to-Many (One Post Many Updoots)
+}
+
+model Updoot {
+	id      	Int     @id @default(autoincrement())
+	value		Int
+
+	user		User 	@relation(fields: [userId], references: [id]) // Many-to-One (Many Updoots One User)
+	userId		Int
+
+	post 		Post 	@relation(fields: [postId], references: [id], onDelete: Cascade) // Many-to-One (Many Updoots One Post)
+	postId 		Int
+}
