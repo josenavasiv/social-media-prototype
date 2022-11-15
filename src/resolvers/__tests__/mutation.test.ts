@@ -34,13 +34,17 @@ describe('Mutation Resolvers', () => {
 			},
 		};
 
-		const mock_data = {
+		const results = {
 			text: 'TEXT',
 			title: 'TITLE',
 		};
 
 		const response = await axiosAPIClient.post('/graphql', body);
 		console.log(response.data);
-		expect(response.data.data.postCreate).toMatchObject(mock_data);
+		expect(response.data.data.postCreate).toMatchObject(results);
 	});
 });
+
+// Checking if user is logged in is just checking if the cookie is stored within redisClient
+// await client.get(key) === value etc...
+// On register check if the req.session.userId exists

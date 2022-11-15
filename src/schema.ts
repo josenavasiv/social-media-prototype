@@ -49,6 +49,7 @@ const typeDefs = `
 	}
 
 	type Error {
+		field: String!
 		message: String!
 	}
 `;

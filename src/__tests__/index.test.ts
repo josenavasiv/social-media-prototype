@@ -32,21 +32,8 @@ afterAll(async () => {
 	// nock.enableNetConnect();
 });
 
-describe('/graphql', () => {
-	it('succeeds when querying for hello', async () => {
-		const helloQuery = `
-			query {
-				hello
-			}
-		`;
-		const queryData = {
-			query: helloQuery,
-		};
-
-		const response = await axiosAPIClient.post('/graphql', queryData);
-		expect(response.data.data.hello).toBe('Hello World');
-	});
-	it('succeeds when querying for hello 22222', async () => {
+describe('Health Check Against Web Server', () => {
+	it('/graphql', async () => {
 		const helloQuery = `
 			query {
 				hello
@@ -60,18 +47,6 @@ describe('/graphql', () => {
 		expect(response.data.data.hello).toBe('Hello World');
 	});
 });
-
-// describe('Integration Test', () => {
-// 	it('returns Hello World', async () => {
-// 		const response = await apolloServer.executeOperation({
-// 			query: helloQuery,
-// 		});
-
-// 		// @ts-ignore
-// 		expect(response.body.singleResult.errors).toBeUndefined();
-// 		expect('Hello World').toBe('Hello World');
-// 	});
-// });
 
 // HERE WE TEST OUT THE ENTIRE APPLICATION AS A WHOLE (Which is an express application)
 // Mega integration test (express app + prisma (sql) + redis (logging) + graphql schema and resolvers)

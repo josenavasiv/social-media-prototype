@@ -7,4 +7,5 @@ module.exports = {
 	forceExit: true,
 	moduleFileExtensions: ['ts', 'js', 'json'],
 	maxWorkers: 1, // runs each test 1-by-1
+	// globalSetup: './config/globalSetup.ts', Fails when import modules
 };

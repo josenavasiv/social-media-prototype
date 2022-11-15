@@ -16,6 +16,7 @@ interface UserRegisterArgs extends UserLoginArgs {
 
 interface UserPayloadType {
 	errors: {
+		field: string;
 		message: string;
 	}[];
 	user: User | null;
@@ -29,18 +30,26 @@ export const userMutationResolvers = {
 	): Promise<UserPayloadType> => {
 		const { username, password } = credentials;
 
+		const validUsername = validator.isLength(username, { min: 3 });
 		const validEmail = validator.isEmail(email);
 		const validPassword = validator.isLength(password, { min: 5 });
 
+		if (!validUsername) {
+			return {
+				errors: [{ field: 'username', message: 'Invalid username' }],
+				user: null,
+			};
+		}
+
 		if (!validEmail) {
 			return {
-				errors: [{ message: 'Invalid email' }],
+				errors: [{ field: 'email', message: 'Invalid email' }],
 				user: null,
 			};
 		}
 		if (!validPassword) {
 			return {
-				errors: [{ message: 'Invalid password' }],
+				errors: [{ field: 'password', message: 'Invalid password' }],
 				user: null,
 			};
 		}
@@ -56,6 +65,8 @@ export const userMutationResolvers = {
 				},
 			});
 
+
+
 			// Logs in user after registering
 			req.session.userId = user.id;
 
@@ -66,13 +77,13 @@ export const userMutationResolvers = {
 		} catch (error: any) {
 			if (error.code === 'P2002' || error.meta.target.includes('username')) {
 				return {
-					errors: [{ message: 'Username unavailable' }],
+					errors: [{ field: 'username', message: 'Username unavailable' }],
 					user: null,
 				};
 			}
 
 			return {
-				errors: [{ message: 'Server error' }],
+				errors: [{ field: 'server', message: 'Server error' }],
 				user: null,
 			};
 		}
@@ -94,7 +105,8 @@ export const userMutationResolvers = {
 			return {
 				errors: [
 					{
-						message: 'Invalid credentials',
+						field: 'username',
+						message: 'Invalid username|password',
 					},
 				],
 				user: null,
@@ -107,7 +119,8 @@ export const userMutationResolvers = {
 			return {
 				errors: [
 					{
-						message: 'Invalid credentials',
+						field: 'password',
+						message: 'Invalid username|password',
 					},
 				],
 				user: null,

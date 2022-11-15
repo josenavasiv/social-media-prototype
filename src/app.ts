@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
 import http from 'http';
-const cors = require('cors');
+import cors from 'cors';
 import { __prod__ } from './constants';
 import { json } from 'body-parser';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import bodyParser from 'body-parser';
 
 // Prisma Client Instance -> Connects to PostreSQL Server
 import { PrismaClient } from '@prisma/client';
@@ -37,16 +38,21 @@ export const initializeWebServer = async () => {
 	await apolloServer.start();
 	await redisClient.connect().catch((error) => console.log(error)); // Connects to localhost:6379 by default
 
+	app.set('trust proxy', true);
 	// Providing middleware for the Express App - MIDDLEWARE RUNS IN SPECIFIED ORDER
 	app.use(
 		'/graphql',
-		cors(),
 		json(),
+		bodyParser.urlencoded({ extended: false }),
+		cors<cors.CorsRequest>({
+			origin: 'http://localhost:3000',
+			credentials: true,
+		}),
 		session({
 			name: 'qid',
 			store: new RedisStore({ client: redisClient, disableTouch: true }),
 			cookie: {
-				maxAge: 1000 * 60 * 60 * 24 * 365, // Max Age of the Cookie in ms
+				maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // Max Age of the Cookie in ms
 				httpOnly: true, // Prevents accessing cooking via the browser
 				secure: __prod__, // cookie only work in https (false in development|testing mode)
 				sameSite: 'lax', // csrf
@@ -69,6 +75,7 @@ export const initializeWebServer = async () => {
 		connection,
 		httpServer,
 		apolloServer,
+		redisClient,
 	};
 };
 
