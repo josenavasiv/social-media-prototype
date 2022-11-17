@@ -12,6 +12,7 @@ const typeDefs = `
 		postDelete(id: ID!): Boolean
 		userRegister(credentials: UserCredentialsInput!, email: String!): UserPayload!
 		userLogin(credentials: UserCredentialsInput!): UserPayload!
+		userLogout: Boolean
 	}
 
 	type Post {

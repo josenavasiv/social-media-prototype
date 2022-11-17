@@ -2,6 +2,7 @@ import { Context } from 'src/types';
 import bcrypt from 'bcryptjs';
 import validator from 'validator';
 import { User } from '@prisma/client';
+import { COOKIE_NAME } from '../../constants';
 
 interface UserLoginArgs {
 	credentials: {
@@ -65,8 +66,6 @@ export const userMutationResolvers = {
 				},
 			});
 
-
-
 			// Logs in user after registering
 			req.session.userId = user.id;
 
@@ -106,7 +105,7 @@ export const userMutationResolvers = {
 				errors: [
 					{
 						field: 'username',
-						message: 'Invalid username|password',
+						message: 'Invalid username',
 					},
 				],
 				user: null,
@@ -120,7 +119,7 @@ export const userMutationResolvers = {
 				errors: [
 					{
 						field: 'password',
-						message: 'Invalid username|password',
+						message: 'Invalid password',
 					},
 				],
 				user: null,
@@ -135,5 +134,22 @@ export const userMutationResolvers = {
 			errors: [],
 			user,
 		};
+	},
+
+	userLogout: async (_parent: any, _args: any, { res, req }: Context): Promise<Boolean> => {
+		// Removes the session from redis
+		return new Promise((resolve) =>
+			req.session.destroy((error) => {
+				// Clears the cookie of the response object
+				res.clearCookie(COOKIE_NAME);
+				if (error) {
+					console.log(error);
+					resolve(true);
+					return;
+				}
+
+				resolve(false);
+			})
+		);
 	},
 };

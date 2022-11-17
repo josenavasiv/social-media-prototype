@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import { __prod__ } from './constants';
+import { __prod__, COOKIE_NAME } from './constants';
 import { json } from 'body-parser';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
@@ -49,7 +49,7 @@ export const initializeWebServer = async () => {
 			credentials: true,
 		}),
 		session({
-			name: 'qid',
+			name: COOKIE_NAME,
 			store: new RedisStore({ client: redisClient, disableTouch: true }),
 			cookie: {
 				maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // Max Age of the Cookie in ms
