@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
+import { Redis } from 'ioredis';
 
 // req.session type
 declare module 'express-session' {
@@ -16,4 +17,5 @@ export interface Context {
 		never,
 		Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
 	>;
+	redis: Redis;
 }

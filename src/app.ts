@@ -14,9 +14,9 @@ export const prisma = new PrismaClient();
 
 // Redis Client Instance -> Connects to Redis Server
 import session from 'express-session';
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 const RedisStore = require('connect-redis')(session);
-const redisClient = createClient({ legacyMode: true }); // Need to provide process.env
+const redis = new Redis(); // Need to provide process.env
 
 // Apollo Server Schema
 import typeDefs from './schema';
@@ -36,7 +36,7 @@ export const initializeWebServer = async () => {
 	});
 
 	await apolloServer.start();
-	await redisClient.connect().catch((error) => console.log(error)); // Connects to localhost:6379 by default
+	await redis.connect().catch((error) => console.log(error)); // Connects to localhost:6379 by default
 
 	app.set('trust proxy', true);
 	// Providing middleware for the Express App - MIDDLEWARE RUNS IN SPECIFIED ORDER
@@ -50,7 +50,7 @@ export const initializeWebServer = async () => {
 		}),
 		session({
 			name: COOKIE_NAME,
-			store: new RedisStore({ client: redisClient, disableTouch: true }),
+			store: new RedisStore({ client: redis, disableTouch: true }),
 			cookie: {
 				maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // Max Age of the Cookie in ms
 				httpOnly: true, // Prevents accessing cooking via the browser
@@ -63,7 +63,7 @@ export const initializeWebServer = async () => {
 		}),
 		expressMiddleware(apolloServer, {
 			// Provides the express app the endpoint '/graphql/' and points to the Graphql server
-			context: async ({ req, res }) => ({ req, res, prisma }),
+			context: async ({ req, res }) => ({ req, res, prisma, redis }),
 		})
 	);
 
@@ -75,12 +75,12 @@ export const initializeWebServer = async () => {
 		connection,
 		httpServer,
 		apolloServer,
-		redisClient,
+		redisClient: redis,
 	};
 };
 
 export const stopWebServer = async () => {
 	connection.close();
 	await prisma.$disconnect();
-	await redisClient.disconnect();
+	redis.disconnect();
 };
