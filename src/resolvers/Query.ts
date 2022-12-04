@@ -1,19 +1,56 @@
+import { Post } from '@prisma/client';
 import { Context } from '../types';
+
+interface PostsArgs {
+	limit: number;
+	cursor?: number; // Basing off of new (createdAt)
+}
+
+interface PaginatedPostsPayloadType {
+	posts: Post[];
+	hasMore: boolean;
+}
 
 export const Query = {
 	hello: (_parent: any, _args: any, _context: Context) => {
 		return 'Hello World';
 	},
-	posts: async (_parent: any, _args: any, { prisma }: Context) => {
-		const posts = await prisma.post.findMany({
-			orderBy: [
-				{
-					updatedAt: 'desc',
-				},
-			],
-		});
-		return posts;
+
+	posts: async (
+		_parent: any,
+		{ limit, cursor }: PostsArgs,
+		{ prisma }: Context
+	): Promise<PaginatedPostsPayloadType> => {
+		const realLimit = Math.min(50, limit);
+
+		const posts = cursor
+			? await prisma.post.findMany({
+					take: realLimit,
+					skip: 1,
+					cursor: {
+						id: cursor,
+					},
+					orderBy: [
+						{
+							createdAt: 'desc',
+						},
+					],
+			  })
+			: await prisma.post.findMany({
+					take: realLimit,
+					orderBy: [
+						{
+							createdAt: 'desc',
+						},
+					],
+			  });
+
+		return {
+			posts,
+			hasMore: posts.length === realLimit,
+		};
 	},
+
 	post: async (_parent: any, args: { id: string }, { prisma }: Context) => {
 		const post = await prisma.post.findUnique({
 			where: {
@@ -22,6 +59,7 @@ export const Query = {
 		});
 		return post;
 	},
+
 	me: async (_parent: any, _args: any, { req, prisma }: Context) => {
 		// user is not logged in
 		if (!req.session.userId) {

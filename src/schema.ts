@@ -1,7 +1,7 @@
 const typeDefs = `
 	type Query {
 		hello: String
-		posts: [Post!]!
+		posts(limit: Int!, cursor: Int): PaginatedPostsPayload!
 		post(id: ID!): Post
 		me: User
 	}
@@ -54,6 +54,11 @@ const typeDefs = `
 	type Error {
 		field: String!
 		message: String!
+	}
+
+	type PaginatedPostsPayload {
+		posts: [Post!]!
+		hasMore: Boolean!
 	}
 `;
 
