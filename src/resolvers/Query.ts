@@ -19,7 +19,7 @@ export const Query = {
 	posts: async (
 		_parent: any,
 		{ limit, cursor }: PostsArgs,
-		{ prisma }: Context
+		{ prisma, req }: Context
 	): Promise<PaginatedPostsPayloadType> => {
 		const realLimit = Math.min(50, limit);
 
@@ -45,10 +45,35 @@ export const Query = {
 					],
 			  });
 
-		return {
-			posts,
-			hasMore: posts.length === realLimit,
-		};
+		if (req.session.userId) {
+			const postsWithVoteStatus = await Promise.all(
+				posts.map(async (post) => {
+					const updoot = await prisma.updoot.findFirst({
+						where: {
+							userId: req.session.userId,
+							postId: post.id,
+						},
+					});
+
+					return {
+						...post,
+						voteStatus: updoot ? updoot.value : null,
+					};
+				})
+			);
+
+			console.log(postsWithVoteStatus);
+
+			return {
+				posts: postsWithVoteStatus,
+				hasMore: postsWithVoteStatus.length === realLimit,
+			};
+		} else {
+			return {
+				posts,
+				hasMore: posts.length === realLimit,
+			};
+		}
 	},
 
 	post: async (_parent: any, args: { id: string }, { prisma }: Context) => {
@@ -57,6 +82,9 @@ export const Query = {
 				id: Number(args.id),
 			},
 		});
+
+		// NEED TO PROVIDE THE SIMILAR DATA AS ABOVE TO UPDATE THE VOTE STATUS (IN POSTS)
+
 		return post;
 	},
 

@@ -10,6 +10,7 @@ const typeDefs = `
 		postCreate(title: String!, text: String!): Post!
 		postUpdate(id: ID!, title: String, text: String): Post
 		postDelete(id: ID!): Boolean
+		postVote(id: ID!, value: Int!): Boolean
 		userRegister(credentials: UserCredentialsInput!, email: String!): UserPayload!
 		userLogin(credentials: UserCredentialsInput!): UserPayload!
 		userLogout: Boolean!
@@ -25,6 +26,8 @@ const typeDefs = `
 		user: User!
 		createdAt: String!
 		updatedAt: String!
+		updoots: [Updoot!]!
+		voteStatus: Int
 	}
 
 	type PostPayload {
@@ -39,6 +42,7 @@ const typeDefs = `
 		posts: [Post!]!
 		createdAt: String!
 		updatedAt: String!
+		updoots: [Updoot!]!
 	}
 
 	type UserPayload {
@@ -59,6 +63,13 @@ const typeDefs = `
 	type PaginatedPostsPayload {
 		posts: [Post!]!
 		hasMore: Boolean!
+	}
+
+	type Updoot {
+		id: ID!
+		value: Int!
+		userId: Int!
+		postId: Int!
 	}
 `;
 

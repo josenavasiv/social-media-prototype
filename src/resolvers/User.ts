@@ -1,7 +1,7 @@
 import { Context } from '../types';
 
 interface UserParentType {
-	id: number;
+	id: number; // Refers to the user id of the User (Prisma Schema)
 	email: string;
 }
 
@@ -17,5 +17,14 @@ export const User = {
 		});
 
 		return posts;
+	},
+	updoots: async ({ id }: UserParentType, _args: any, { prisma }: Context) => {
+		const updoots = await prisma.updoot.findMany({
+			where: {
+				userId: id,
+			},
+		});
+
+		return updoots;
 	},
 };

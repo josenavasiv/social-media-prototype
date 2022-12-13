@@ -20,7 +20,7 @@ model User {
 	updatedAt 	DateTime @updatedAt
 
 	posts		Post[] // One User Many Posts
-	updoots		Updoot[]
+	updoots		Updoot[] // On User Many Updoots
 }
 
 model Post {
@@ -38,13 +38,14 @@ model Post {
 	updoots 	Updoot[] // One-to-Many (One Post Many Updoots)
 }
 
+// Many-to-Many Relationship
 model Updoot {
 	id      	Int     @id @default(autoincrement())
-	value		Int
+	value		Int  // +1 means upvote | -1 means downvote
 
-	user		User 	@relation(fields: [userId], references: [id]) // Many-to-One (Many Updoots One User)
+	user		User 	@relation(fields: [userId], references: [id]) 
 	userId		Int
 
-	post 		Post 	@relation(fields: [postId], references: [id], onDelete: Cascade) // Many-to-One (Many Updoots One Post)
+	post 		Post 	@relation(fields: [postId], references: [id], onDelete: Cascade) 
 	postId 		Int
 }

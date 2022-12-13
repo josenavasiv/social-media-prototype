@@ -98,4 +98,74 @@ export const postMutationResolvers = {
 			return false;
 		}
 	},
+	postVote: async (_parent: any, { id, value }: { id: string; value: number }, { prisma, req }: Context) => {
+		if (!req.session.userId) {
+			throw new Error('Not Authenticated');
+		}
+
+		const isUpdoot = value !== -1;
+		const realValue = isUpdoot ? 1 : -1;
+
+		const updootExists = await prisma.updoot.findFirst({
+			where: {
+				userId: req.session.userId,
+				postId: parseInt(id),
+			},
+		});
+
+		try {
+			// User is updating their vote
+			if (updootExists && updootExists.value !== realValue) {
+				await prisma.updoot.update({
+					where: {
+						id: updootExists.id,
+					},
+					data: {
+						value: realValue,
+					},
+				});
+
+				await prisma.post.update({
+					where: {
+						id: parseInt(id),
+					},
+					data: {
+						points: {
+							...(realValue > 0 && { increment: 2 }),
+							...(realValue < 0 && { decrement: 2 }),
+						},
+						// points: postExists.points + realValue,
+					},
+				});
+
+				// User has never voted on this post before
+			} else if (!updootExists) {
+				// Create the updoot relationship
+				await prisma.updoot.create({
+					data: {
+						userId: req.session.userId,
+						postId: parseInt(id),
+						value: realValue,
+					},
+				});
+
+				// Update the points on the post
+				await prisma.post.update({
+					where: {
+						id: parseInt(id),
+					},
+					data: {
+						points: {
+							...(realValue > 0 && { increment: 1 }),
+							...(realValue < 0 && { decrement: 1 }),
+						},
+					},
+				});
+			}
+
+			return true;
+		} catch (error) {
+			return false;
+		}
+	},
 };
